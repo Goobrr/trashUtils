@@ -15,7 +15,6 @@ class Writer {
             f.open(filename, std::ios::binary);
         }
 
-        // TODO specialize strings
         template <typename T>
         void write(T value){;
             f.write(reinterpret_cast<char *>(&value), sizeof(T));
@@ -31,6 +30,14 @@ class Writer {
         }
 };
 
+template <>
+void Writer::write<std::string>(std::string text){
+    write<int>(text.length());
+    for(int i = 0; i < text.length(); i++){
+        write<char>((char)text.at(i));
+    }
+}
+
 class Reader {
     private:
         std::ifstream f;
@@ -43,7 +50,6 @@ class Reader {
             f.open(filename, std::ios::binary);
         }
 
-        // TODO specialize strings
         template <typename T>
         T read(){
             T res;
@@ -60,3 +66,16 @@ class Reader {
             return count;
         }
 };
+
+template <>
+std::string Reader::read<std::string>(){
+    std::string res;
+
+    int len = read<int>();
+    res.resize(len);
+
+    f.read(res.data(), len);
+    count += len;
+
+    return res;
+}
